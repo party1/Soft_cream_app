@@ -438,6 +438,7 @@ void Csoft_cream_appDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT1, msgED);
 	//  DDX_Control(pDX, IDC_PICT0, IDC_PICT0);
 	DDX_Radio(pDX, IDC_RADIO1, m_xvRadio);
+	DDX_Control(pDX, IDC_ANIMATE1, m_xcAnimate_Remaining);
 }
 
 BEGIN_MESSAGE_MAP(Csoft_cream_appDlg, CDialogEx)
@@ -451,6 +452,8 @@ BEGIN_MESSAGE_MAP(Csoft_cream_appDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON3, &Csoft_cream_appDlg::OnBnClickedButton3)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_BUTTON4, &Csoft_cream_appDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_RADIO2, &Csoft_cream_appDlg::OnBnClickedRadio2)
+	ON_BN_CLICKED(IDC_RADIO3, &Csoft_cream_appDlg::OnBnClickedRadio3)
 END_MESSAGE_MAP()
 
 
@@ -563,14 +566,18 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 		//		glOrtho( -aspect, aspect, -1.0, 1.0, -10.0, 10.0);
 
 		gluPerspective(30.0, aspect, 0.1, 100.0);	// 透視投影を行う
+
 		// 視野角30.0度、アスペクト比は描画領域と同じ、描画範囲となるZの最小値は0.1, 最大値は100.0
+		// TODO: ここにメッセージ ハンドラ コードを追加します。
+		// 描画メッセージで CStatic::OnPaint() を呼び出さないでください。
 
 		//		gluLookAt( 4.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0); 
-		gluLookAt(0.0, 70.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);	// 視点の位置を決める
+		gluLookAt(20.0, 70.0,20.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);	// 視点の位置を決める
 		//8,25,8
 		//20,50,20
 		//0.70,0
 		// 視点位置は (6 6 4)t, 視線の先は　(0 0 0)t, 上を表す方向ベクトルは (0 0 1)t
+
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -578,7 +585,12 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 	// OpenGLの初期化はここまで
 
 	m_nTimer = SetTimer(1, 30, 0);//Timerセット　0.03秒
-
+	//1/5　変更箇所
+	//アニメーション初期化
+	m_xcAnimate_Remaining.Open(L"0.avi");
+	m_xcAnimate_Remaining.Play(0, -1, 1);
+	SetTimer(2, 1000, 0);//Timerセット　1秒
+	//1/5　ここまで
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
 
@@ -598,8 +610,11 @@ void Csoft_cream_appDlg::OnSysCommand(UINT nID, LPARAM lParam)
 // ダイアログに最小化ボタンを追加する場合、アイコンを描画するための
 //  下のコードが必要です。ドキュメント/ビュー モデルを使う MFC アプリケーションの場合、
 //  これは、Framework によって自動的に設定されます。
-void DrawCone(){
 
+void DrawCone(){
+	//コーンの描画関数
+	//8角形で上の面引いて構築
+	//サイズ変更可能な関数化する？
 	glColor3f(1.0, 1.0, 0.0);
 	glBegin(GL_POLYGON);
 	glVertex3d(0.0, 0.0, -8.0);
@@ -646,6 +661,9 @@ void DrawCone(){
 }
 
 void DrawHideCone(){
+	//コーン隠し用の壁の関数
+	//4回置けば箱的な囲いに！
+	//球で隠す案もあるのでどうするか
 	glColor3f(1.0, 1.0, 1.0);
 	glBegin(GL_POLYGON);
 	glVertex3d(0.0, 0.0, 0.0);
@@ -656,7 +674,7 @@ void DrawHideCone(){
 }
 
 void DrawAxis(){
-
+	//xyzの3本線を引く関数
 	glColor3f(1.0, 0.0, 0.0);
 	glBegin(GL_LINES);
 	glVertex3d(0.0, 0.0, 0.0);
@@ -673,17 +691,21 @@ void DrawAxis(){
 }
 
 void DrawServer(){
+	//サーバー用の壁の関数
+	//4回置けば箱
+	//なんか変になったけど現時点では放置
 	glColor3f(1.0, 1.0, 1.0);
 	glBegin(GL_POLYGON);
 	glVertex3d(0.0, 0.0, 0.0);
 	glVertex3d(15.0, 0.0, 0.0);
-	glVertex3d(15.0, 0.0, 4.0);
-	glVertex3d(0.0, 0.0, 4.0);
+	glVertex3d(15.0, 0.0, 8.0);
+	glVertex3d(0.0, 0.0, 8.0);
 	glEnd();
 }
 
 void DrawFallCream(){
-
+	//落ちるクリームの関数
+	//板
 	glColor3f(0.0, 1.0, 1.0);
 	glBegin(GL_POLYGON);
 	glVertex3d(0.0, 0.0, 0.0);
@@ -693,50 +715,135 @@ void DrawFallCream(){
 	glEnd();
 }
 
+//1/5　変更箇所
+void DrawFallCream(int cream_color){
+	//落ちるクリームの関数
+	//円柱
+	double pi = 3.1415;//円周率
+	float radius = 1.0;//半径
+	float height = 3.0;//高さ
+	int sides = 16;//n角形
+
+		glColor3f(0.0, 1.0, 0.0);
+		//下面
+		glNormal3d(0.0, -1.0, 0.0);
+		glBegin(GL_POLYGON);
+		for (double i = sides; i >= 0; --i) {
+			double t = pi * 2 / sides * (double)i;
+			glVertex3d(radius * cos(t), radius * sin(t), -height);
+		}
+		glEnd();
+
+
+		//側面
+		if (cream_color == 0){
+			glColor3f(0.4, 0.2, 0.2);
+		}
+		else if (cream_color == 1){
+			glColor3f(0.0, 0.5, 0.0);
+		}
+		else if (cream_color == 2){
+			glColor3f(1.0, 0.0, 0.8);
+		}
+		glBegin(GL_QUAD_STRIP);
+		for (double i = 0; i <= sides; i = i + 1){
+			double t = i * 2 * pi / sides;
+			glNormal3f((GLfloat)cos(t), 0.0, (GLfloat)sin(t));
+			glVertex3f((GLfloat)(radius*cos(t)), (GLfloat)(radius*sin(t)), -height);
+			glVertex3f((GLfloat)(radius*cos(t)), (GLfloat)(radius*sin(t)), height);
+		}
+		glEnd();
+
+		//上面
+		//glColor3f(1.0, 1.0, 1.0);
+		glNormal3d(0.0, 1.0, 0.0);
+		glBegin(GL_POLYGON);
+		for (double i = 0; i < sides; i++) {
+			double t = pi * 2 / sides * (double)i;
+			glVertex3d(radius * cos(t), radius * sin(t), height);
+		}
+		glEnd();
+}
+
+void DrawFallCream(int cream_color, double fall_cream, int cream_number,int i){
+	//色　落下位置　番号　for
+	//引数4つで判別　番号と現在の落下位置で描画
+	//条件から外れれば消滅するように
+	if (cream_number == i + 1 && fall_cream >= -30 - 6 * i){
+		DrawFallCream(cream_color);
+	}
+}
+//1/5　ここまで
+
 void Csoft_cream_appDlg::OnPaint()
 {
+	//1/5　変更箇所
+	if (cream_count >= 150){
+		//OnPaint側でアニメーション変化実験
+		m_xcAnimate_Remaining.Open(L"246.avi");
+		m_xcAnimate_Remaining.Play(0, -1, 1);
+	}
+	//1/5　ここまで
 
 	CPaintDC dc(this); // device context for painting
-	// TODO: ここにメッセージ ハンドラ コードを追加します。
-	// 描画メッセージで CStatic::OnPaint() を呼び出さないでください。
+
+
+
 
 	::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLineWidth(3.0);
 
 
-
-	DrawAxis();
+	DrawAxis();//3本線を引く
 
 	::glPushMatrix();
+	//クリームの落下を描画
 	if (hide_cone == 1){
 		glTranslated(-7.5, 0.0, 15.0);
 		::glPushMatrix();
-			glTranslated(7.0, 0.0, 0.0);
-			if (fall_cream <= 0 &&fall_cream>=-24){
+			glTranslated(7.5, 0.0, 0.0);
+			if (fall_cream <= 0){
 				glTranslated(0.0, 0.0, fall_cream);
-//				for (int i = 1; i <= 4; i++){
-	//				glTranslated(0.0, 0.0, -i*4);
-					DrawFallCream();
-		//		}
-				//DrawFallCream();
-			//	if ((cream_count%=4)==0){
-					
-				//}
+				//1/5　変更箇所
+				glRotated(cream_count+2, 0.0, 0.0, 1.0);
+				for (int i = 0; i < 20; i++){
+					cream_number[i] = i+1;
+					glTranslated(0.0, 0.0, 6);
+					DrawFallCream(cream_color, fall_cream, cream_number[i],i);
+				}
+				//1/5　ここまで
 			}
 		::glPopMatrix();
+		//1/5　変更箇所
+		//サーバーの描画
 		DrawServer();
+		glTranslated(-3.0, 3.0, 0.0);
+		DrawServer();
+		glRotated(-90, 0.0, 0.0, 1.0);
+		DrawServer();
+		glTranslated(0.0, 6.0, 0.0);
+		DrawServer();
+		//1/5　ここまで
 	}
 	::glPopMatrix();
 	
 	::glPushMatrix();
 	glTranslated(0.0, 0.0, -8.0);
-	//4
-	//glRotated(90,1,1,0);
-
+	//コーンの表示
 	DrawCone();
 	if (hide_cone == 1){
-		glTranslated(-3.0, 0.0, -1.0);
-		DrawHideCone();
+		::glPushMatrix();
+		//3方面のコーン隠し
+			glTranslated(-3.0, 3.0, 0.0);
+			DrawHideCone();
+			glRotated(-90, 0.0, 0.0, 1.0);
+			DrawHideCone();
+			glTranslated(0.0, 6.0, 0.0);
+			DrawHideCone();
+		::glPopMatrix();
+		//一時的に4枚目は出さない
+		//glTranslated(-3.0, -3.0, 0.0);
+		//DrawHideCone();
 	}
 
 	::glPopMatrix();
@@ -1175,16 +1282,19 @@ void Csoft_cream_appDlg::OnBnClickedButton2()
 
 
 
-void Csoft_cream_appDlg::OnBnClickedRadio1()
-{
-	// TODO: ここにコントロール通知ハンドラー コードを追加します。
-}
+//1/5　変更箇所　ほぼ全部
+
 
 
 void Csoft_cream_appDlg::OnBnClickedButton3()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	//プロトタイプモード作動ボタン
+	//隠す壁を表示して描画を開始する
 	hide_cone = 1;
+	//ボタン押した場合の初期
+	m_xcAnimate_Remaining.Open(L"256.avi");
+	m_xcAnimate_Remaining.Play(0, -1, 1);
 	OnPaint();
 }
 
@@ -1192,11 +1302,23 @@ void Csoft_cream_appDlg::OnBnClickedButton3()
 void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
+	//setTimerの回数毎に呼び出し
+	//ID1は0.03秒毎
+	//ID2は1秒毎
 	if (hide_cone == 1){
 		if (nIDEvent == 1){
+			//条件を満たしている場合
+			//アイスクリーム落下、実行カウント加算、描画
+			//複数個分割を考えると配列で行うか？
 			fall_cream -= 0.5;
-			cream_count++;
+			cream_count+=2;
 			OnPaint();
+		}
+		if (nIDEvent == 2){
+			//秒数カウントでアニメーション変化テスト
+			//この方式の場合別の関数で中身の方がスマート？
+			m_xcAnimate_Remaining.Open(L"16.avi");
+			m_xcAnimate_Remaining.Play(0, -1, 1);
 		}
 	}
 	CDialogEx::OnTimer(nIDEvent);
@@ -1206,8 +1328,50 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 void Csoft_cream_appDlg::OnBnClickedButton4()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	//全部をOFF　つまりリセット
 	hide_cone = 0;
 	fall_cream = 0;
 	cream_count = 0;
+	for(int i = 0; i < 100; i++){
+		cream_number[i]=0;
+	}
 	OnPaint();
+
 }
+
+void Csoft_cream_appDlg::OnBnClickedRadio1()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	//ラジオボタン3つ
+	//場合によっては普通にボタン3つになるが現時点ではこの方式を採用
+	//起動していない場合に色を選択
+	if (hide_cone == 0){
+		cream_color = 0;
+	}
+	else{
+		
+	}
+}
+
+void Csoft_cream_appDlg::OnBnClickedRadio2()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	if (hide_cone == 0){
+		cream_color = 1;
+	}
+	else{
+		
+	}
+}
+
+
+void Csoft_cream_appDlg::OnBnClickedRadio3()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	if (hide_cone == 0){
+		cream_color = 2;
+	}
+	else{
+	}
+}
+//1/5　ここまで
