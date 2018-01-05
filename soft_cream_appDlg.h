@@ -4,6 +4,7 @@
 
 #pragma once
 #include "afxwin.h"
+#include "afxcmn.h"
 
 
 // Csoft_cream_appDlg ダイアログ
@@ -50,18 +51,28 @@ private:
 	int m_xvRadio;
 public:
 	afx_msg void OnBnClickedRadio1();
+	afx_msg void OnBnClickedRadio2();
+	afx_msg void OnBnClickedRadio3();
 	afx_msg void OnBnClickedButton3();
-
-	//以下実験
-	int hide_cone = 0;//スイッチ
-	unsigned int m_nTimer;//タイマー(仮)
-	afx_msg void OnTimer(UINT_PTR nIDEvent);//OnTimer用
-	double fall_cream = 0;//落ちるクリーム
-	int cream_count = 0;
 	afx_msg void OnBnClickedButton4();
+	//以下実験
+	unsigned int m_nTimer;//タイマー変数(仮)　使用しない気がする
+	afx_msg void OnTimer(UINT_PTR nIDEvent);//OnTimer用
+	int hide_cone = 0;//スイッチ
+	double fall_cream = 0;//落ちるクリーム　0.5加算で落下表現　Sin関数使う？
+	int cream_count = 0;//クリームの数　スイッチ起動から更新カウントを記録
+	int cream_number[100];//各クリームの番号として配列
+	int cream_color = 0;//クリームの色仮実装用変数　最終的にテクスチャにする
 
 	//以下i-sunが追加した変数
 	double lx, ly;               //リニア加速度x,y
 	double e4x, e4y, e4z;        //e4各ベクトル
 	double dx, dy, dz;           //移動
+
+	
+	
+private:
+	CAnimateCtrl m_xcAnimate_Remaining;//アニメーション用　クリーム残量に紐付け
+
+
 };
