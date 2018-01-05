@@ -35,6 +35,7 @@ public:
 
 private:
 	CStatic m_glView;
+	CStatic m_glView2;
 	CDC *m_pDC;
 	HGLRC m_GLRC;
 	BOOL SetUpPixelFormat(HDC hdc);
@@ -58,4 +59,9 @@ public:
 	double fall_cream = 0;//落ちるクリーム
 	int cream_count = 0;
 	afx_msg void OnBnClickedButton4();
+
+	//以下i-sunが追加した変数
+	double lx, ly;               //リニア加速度x,y
+	double e4x, e4y, e4z;        //e4各ベクトル
+	double dx, dy, dz;           //移動
 };

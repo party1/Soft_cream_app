@@ -10,6 +10,7 @@
 //#include "stdlib.h"
 //#include "stdio.h"
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -435,6 +436,7 @@ void Csoft_cream_appDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_GLVIEW, m_glView);
+	DDX_Control(pDX, IDC_GLVIEW2, m_glView2);
 	DDX_Control(pDX, IDC_EDIT1, msgED);
 	//  DDX_Control(pDX, IDC_PICT0, IDC_PICT0);
 	DDX_Radio(pDX, IDC_RADIO1, m_xvRadio);
@@ -545,7 +547,6 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 	//Open_GLを初期化する
 
 	m_pDC = new CClientDC(&m_glView);	// 描画用のデバイスコンテキスト
-
 	if (SetUpPixelFormat(m_pDC->m_hDC) != FALSE){	// 描画可能であればOpenGLの初期化を続行する
 		m_GLRC = wglCreateContext(m_pDC->m_hDC);
 		wglMakeCurrent(m_pDC->m_hDC, m_GLRC);
@@ -560,6 +561,7 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 		glViewport(0, 0, width, height);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
+
 		//		glOrtho( -aspect, aspect, -1.0, 1.0, -10.0, 10.0);
 
 		gluPerspective(30.0, aspect, 0.1, 100.0);	// 透視投影を行う
@@ -598,6 +600,7 @@ void Csoft_cream_appDlg::OnSysCommand(UINT nID, LPARAM lParam)
 // ダイアログに最小化ボタンを追加する場合、アイコンを描画するための
 //  下のコードが必要です。ドキュメント/ビュー モデルを使う MFC アプリケーションの場合、
 //  これは、Framework によって自動的に設定されます。
+//コーンを描写する関数
 void DrawCone(){
 
 	glColor3f(1.0, 1.0, 0.0);
@@ -701,6 +704,7 @@ void Csoft_cream_appDlg::OnPaint()
 	// 描画メッセージで CStatic::OnPaint() を呼び出さないでください。
 
 	::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 	glLineWidth(3.0);
 
 
@@ -709,7 +713,7 @@ void Csoft_cream_appDlg::OnPaint()
 
 	::glPushMatrix();
 	if (hide_cone == 1){
-		glTranslated(-7.5, 0.0, 15.0);
+		glTranslated(-7.5, 0.0, 200.0); 
 		::glPushMatrix();
 			glTranslated(7.0, 0.0, 0.0);
 			if (fall_cream <= 0 &&fall_cream>=-24){
@@ -733,9 +737,16 @@ void Csoft_cream_appDlg::OnPaint()
 	//4
 	//glRotated(90,1,1,0);
 
+	//コーンを動かす
+	glPushMatrix();
+	glRotated(dx, 1.0, 0.0, 0.0);
+	glRotated(dy, 0.0, 1.0, 0.0);
+	glRotated(dz, 0.0, 0.0, 1.0);
 	DrawCone();
+	glPopMatrix();
+
 	if (hide_cone == 1){
-		glTranslated(-3.0, 0.0, -1.0);
+		glTranslated(-3.0, 0.0, 10.0);
 		DrawHideCone();
 	}
 
@@ -862,6 +873,26 @@ LRESULT Csoft_cream_appDlg::OnMessageRCV(WPARAM wParam, LPARAM lParam)
 			myPICTDC0.FillSolidRect(myPICTRECT0, RGB(255, 0, 0));		// レッド
 		}
 	}
+
+	//--------------------------データの受け取りと変換-----------------------------//
+	lx = laccbuf[X_AXIS][datasize-1];
+	ly = laccbuf[Y_AXIS][datasize-1];
+
+	e4x = e4buf[X_AXIS][datasize-1];
+	e4y = e4buf[Y_AXIS][datasize-1];
+	e4z = e4buf[Z_AXIS][datasize-1];
+
+	/*
+	//e4ベクトルをdegreeに変換
+	double tmpx = asin(e4x)*(180.0 / PI);
+	double tmpy = asin(e4y)*(180.0 / PI);
+	double tmpz = asin(e4z)*(180.0 / PI);
+	dx = tmpx;
+	dy = tmpy;
+	dz = tmpz;
+	*/
+	//--------------------------ここまで-------------------------------------//
+
 	/*
 	if (graph_enable == 0) return TRUE;	// グラフ描画のON/OFFを決める
 
@@ -1192,6 +1223,13 @@ void Csoft_cream_appDlg::OnBnClickedButton3()
 void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
+	double tmpx = asin(e4x)*(180.0 / PI);
+	double tmpy = asin(e4y)*(180.0 / PI);
+	double tmpz = asin(e4z)*(180.0 / PI);
+	dx = -tmpx;
+	dy = -tmpy;
+	dz = -tmpz;
+	
 	if (hide_cone == 1){
 		if (nIDEvent == 1){
 			fall_cream -= 0.5;
@@ -1210,4 +1248,24 @@ void Csoft_cream_appDlg::OnBnClickedButton4()
 	fall_cream = 0;
 	cream_count = 0;
 	OnPaint();
+}
+
+//12/22 追加分 遠心力を計算して返す関数
+double centrifugal_force_cal(double lx, double ly, double e4z)
+{
+	double cForce = 0;
+	// リニア加速度x,yの平方二乗和
+	cForce = abs(sqrt((lx*lx) + (ly*ly))) + abs(sqrt(e4z*e4z));
+
+	return cForce;
+}
+
+//e4にてデバイスの傾きをdegreeで返す関数
+double e4z_conversion_degree(double e4z)
+{
+	double deg = 0;
+	//e4zの傾きをdegreeに直す
+	deg = asin(e4z) * 180 / PI;
+
+	return deg;
 }
