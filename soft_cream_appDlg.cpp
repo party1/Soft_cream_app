@@ -441,6 +441,8 @@ void Csoft_cream_appDlg::DoDataExchange(CDataExchange* pDX)
 	//  DDX_Control(pDX, IDC_PICT0, IDC_PICT0);
 	DDX_Radio(pDX, IDC_RADIO1, m_xvRadio);
 	DDX_Control(pDX, IDC_ANIMATE1, m_xcAnimate_Remaining);
+	DDX_Control(pDX, IDC_EDIT2, msgED1);
+	DDX_Control(pDX, IDC_EDIT3, msgED2);
 }
 
 BEGIN_MESSAGE_MAP(Csoft_cream_appDlg, CDialogEx)
@@ -842,8 +844,11 @@ void Csoft_cream_appDlg::OnPaint()
 	glRotated(dy, 0.0, 1.0, 0.0);
 	glRotated(dz, 0.0, 0.0, 1.0);
 
+	glPushMatrix();
+	glScaled(1.5, 1.5, 1.5);
 	//コーンの表示
 	DrawCone();
+	glPopMatrix();
 	glPopMatrix();
 
 	if (hide_cone == 1){
@@ -1334,6 +1339,26 @@ void Csoft_cream_appDlg::OnBnClickedButton3()
 	OnPaint();
 }
 
+//12/22 追加分 遠心力を計算して返す関数
+double centrifugal_force_cal(double lx, double ly, double e4z)
+{
+	double cForce = 0;
+	// リニア加速度x,yの平方二乗和
+	cForce = abs(sqrt((lx*lx) + (ly*ly))) + abs(sqrt(1 - (e4z*e4z)));
+
+	return cForce;
+}
+
+//e4にてデバイスの傾きをdegreeで返す関数
+double e4z_conversion_degree(double e4z)
+{
+	double deg = 0;
+	//e4zの傾きをdegreeに直す
+	deg = asin(e4z) * 180 / PI;
+
+	return deg;
+}
+
 
 void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 {
@@ -1344,6 +1369,15 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 	dx = -tmpx;
 	dy = -tmpy;
 	dz = -tmpz;
+	
+	double cenF = centrifugal_force_cal(lx, ly, e4z);
+	double e4Deg = e4z_conversion_degree(e4z);
+	CString cf, ed;
+
+	cf.Format(_T("%f"), cenF);
+	ed.Format(_T("%f"), e4Deg);
+	msgED1.SetWindowTextW(cf);
+	msgED2.SetWindowTextW(ed);
 
 	//setTimerの回数毎に呼び出し
 	//ID1は0.03秒毎
@@ -1419,23 +1453,4 @@ void Csoft_cream_appDlg::OnBnClickedRadio3()
 	}
 }
 
-//12/22 追加分 遠心力を計算して返す関数
-double centrifugal_force_cal(double lx, double ly, double e4z)
-{
-	double cForce = 0;
-	// リニア加速度x,yの平方二乗和
-	cForce = abs(sqrt((lx*lx) + (ly*ly))) + abs(sqrt(e4z*e4z));
-
-	return cForce;
-}
-
-//e4にてデバイスの傾きをdegreeで返す関数
-double e4z_conversion_degree(double e4z)
-{
-	double deg = 0;
-	//e4zの傾きをdegreeに直す
-	deg = asin(e4z) * 180 / PI;
-
-	return deg;
-}
 

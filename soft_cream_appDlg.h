@@ -75,4 +75,7 @@ private:
 	CAnimateCtrl m_xcAnimate_Remaining;//アニメーション用　クリーム残量に紐付け
 
 
+public:
+	CEdit msgED1;
+	CEdit msgED2;
 };
