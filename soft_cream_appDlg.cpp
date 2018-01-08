@@ -1372,10 +1372,19 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 	
 	double cenF = centrifugal_force_cal(lx, ly, e4z);
 	double e4Deg = e4z_conversion_degree(e4z);
+
+	//‰“S—Í‚ÆŒX‚«‚ÌÅ‚“_‚ğ•Û‘¶‚µ‚Ä‚¨‚­
+	if (maxCen < cenF){
+		maxCen = cenF;
+	}
+	if (maxDeg < e4Deg){
+		maxDeg = e4Deg;
+	}
+
 	CString cf, ed;
 
-	cf.Format(_T("%f"), cenF);
-	ed.Format(_T("%f"), e4Deg);
+	cf.Format(_T("%f,  %f"), cenF, maxCen);
+	ed.Format(_T("%f,  %f"), e4Deg, maxDeg);
 	msgED1.SetWindowTextW(cf);
 	msgED2.SetWindowTextW(ed);
 

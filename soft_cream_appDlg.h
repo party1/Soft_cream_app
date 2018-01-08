@@ -68,7 +68,7 @@ public:
 	double lx, ly;               //リニア加速度x,y
 	double e4x, e4y, e4z;        //e4各ベクトル
 	double dx, dy, dz;           //移動
-
+	double maxCen = 0.0, maxDeg = 0.0;       //傾きと遠心力の最高点
 	
 	
 private:
