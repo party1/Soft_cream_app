@@ -72,6 +72,7 @@ public:
 	double saveDeg = 0.0;         //最初の一回目の値を保存する変数
 	double deterDeg = 0.0;        //0度から計測した傾き
     int    firstCount = 0;          //一回だけ使うフラグ
+	CFont *m_newFont;
 	
 private:
 	CAnimateCtrl m_xcAnimate_Remaining;//アニメーション用　クリーム残量に紐付け

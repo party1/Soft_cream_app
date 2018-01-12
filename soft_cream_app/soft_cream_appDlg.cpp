@@ -600,6 +600,21 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 	m_xcAnimate_Remaining.Play(0, -1, 1);
 	SetTimer(2, 1000, 0);//Timerセット　1秒
 	//1/5　ここまで
+
+	//以下フォントの大きさを変える
+	CFont  *curFont;
+	curFont = msgED.GetFont();
+	LOGFONTW mylf;
+	curFont->GetLogFont(&mylf);
+	mylf.lfHeight = 20;
+	mylf.lfWidth = 10;
+	//mylf.lfWeight = FW_HEAVY;
+	m_newFont = new CFont;
+	m_newFont->CreateFontIndirectW(&mylf);
+	msgED.SetFont(m_newFont);
+	msgED1.SetFont(m_newFont);
+	msgED2.SetFont(m_newFont);
+
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
 
@@ -1410,8 +1425,8 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 
 	CString cf, ed;
 
-	cf.Format(_T("%f,  %f"), cenF, maxCen);
-	ed.Format(_T("%f,  %f"), deterDeg, maxDeg);
+	cf.Format(_T("%0.3f,  MAX = %0.3f"), cenF, maxCen);
+	ed.Format(_T("%0.3f,  MAX = %0.3f"), deterDeg, maxDeg);
 	msgED1.SetWindowTextW(cf);
 	msgED2.SetWindowTextW(ed);
 
