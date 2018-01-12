@@ -99,5 +99,12 @@ public:
 	double cream_count = 0;//double型に変更
 	double fall_cream_ch = 0;//落下速度変更実験
 	double cream_count_ch = 0;//同上
+
+	double cenF_border=2.0;//遠心力基準値
+	double e4Deg_border=10;//角度基準値
+
+	//一時的に-化　本番では戻す
+	double cenF_no_move = -1.2;//動きほぼなし　1.2
+	double e4Deg_no_move = -2;//同上　2
 	//1/11　ここまで
 };
