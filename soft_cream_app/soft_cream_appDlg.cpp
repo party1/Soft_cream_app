@@ -679,6 +679,7 @@ void DrawCone(){
 void DrawHideCone(){
 	//コーン隠し用の壁の関数
 	//4回置けば箱的な囲いに！
+	//球で隠す案もあるのでどうするか
 	glColor3f(1.0, 1.0, 1.0);
 	glBegin(GL_POLYGON);
 	glVertex3d(0.0, 0.0, 0.0);
@@ -686,23 +687,6 @@ void DrawHideCone(){
 	glVertex3d(6.0, 0.0, 4.0);
 	glVertex3d(0.0, 0.0, 4.0);
 	glEnd();
-}
-
-void DrawHideCone(int stack){
-	glTranslated(0.0, 0.0, stack*4.0);
-	::glPushMatrix();
-		::glPushMatrix();
-		//3方面のコーン隠し
-			glTranslated(-3.0, 3.0, 0.0);
-			DrawHideCone();
-			glRotated(-90, 0.0, 0.0, 1.0);
-			DrawHideCone();
-			glTranslated(0.0, 6.0, 0.0);
-			DrawHideCone();
-		::glPopMatrix();
-		glTranslated(-3.0, -3.0, 0.0);
-		DrawHideCone();
-	::glPopMatrix();
 }
 
 void DrawAxis(){
@@ -881,27 +865,23 @@ void Csoft_cream_appDlg::OnPaint()
 	glPopMatrix();
 	glPopMatrix();
 
-	//関数化　一定ライン超えたら増えるように
 	if (hide_cone == 1){
-		DrawHideCone(0);
-		if (cream_count > 250){
-			DrawHideCone(1);
-		}
-		/*
+
+		//glTranslated(-3.0, 0.0, 10.0);
+		//DrawHideCone();
 		::glPushMatrix();
-			::glPushMatrix();
-				//3方面のコーン隠し
-				glTranslated(-3.0, 3.0, 0.0);
-				DrawHideCone();
-				glRotated(-90, 0.0, 0.0, 1.0);
-				DrawHideCone();
-				glTranslated(0.0, 6.0, 0.0);
-				DrawHideCone();
-			::glPopMatrix();
-			glTranslated(-3.0, -3.0, 0.0);
+		//3方面のコーン隠し
+			glTranslated(-3.0, 3.0, 0.0);
+			DrawHideCone();
+			glRotated(-90, 0.0, 0.0, 1.0);
+			DrawHideCone();
+			glTranslated(0.0, 6.0, 0.0);
 			DrawHideCone();
 		::glPopMatrix();
-		*/
+		//一時的に4枚目は出さない
+		glTranslated(-3.0, -3.0, 0.0);
+		DrawHideCone();
+
 	}
 
 	::glPopMatrix();
@@ -1366,15 +1346,13 @@ void Csoft_cream_appDlg::OnBnClickedButton3()
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
 	//プロトタイプモード作動ボタン
 	//隠す壁を表示して描画を開始する
-	if (hide_cone == 0){
-		hide_cone = 1;
-		SetTimer(1, 30, 0);//Timerセット　0.03秒
-		//ボタン押した場合の初期
-		m_xcAnimate_Remaining.Open(L"180-320.avi");
-		m_xcAnimate_Remaining.Play(0, -1, 1);
-		GetDlgItem(IDC_GLVIEW)->ShowWindow(SW_SHOW);
-		OnPaint();
-	}
+	hide_cone = 1;
+	SetTimer(1, 30, 0);//Timerセット　0.03秒
+	//ボタン押した場合の初期
+	m_xcAnimate_Remaining.Open(L"180-320.avi");
+	m_xcAnimate_Remaining.Play(0, -1, 1);
+	GetDlgItem(IDC_GLVIEW)->ShowWindow(SW_SHOW);
+	OnPaint();
 }
 
 //12/22 追加分 遠心力を計算して返す関数
@@ -1489,30 +1467,24 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 			if (cream_count <= 500){//500以下で50の倍数
 				//クリームカウントでアニメーション変化テスト
 				//double型にしたせいで元の方法が使えなくなったので仕方ないね
-				//システム修復
-				if (count_anim == 0&&cream_count >= 50){
+				if (count_anim == 0&&cream_count <= 50){
 					m_xcAnimate_Remaining.Open(L"0m.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
-					count_anim++;
 				}
-				else if (count_anim == 1 && cream_count >= 100){
+				else if (count_anim == 1 && cream_count <= 100){
 					m_xcAnimate_Remaining.Open(L"1m.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
-					count_anim++;
 				}
 				else{
-					//m_xcAnimate_Remaining.Open(L"0m.avi");
-					//m_xcAnimate_Remaining.Play(0, -1, 1);
+
 				}
 
+				count_anim++;
 			}
 
 			//1/11　ここまで
-			maxCen = 1.0;//仮
-			maxDeg = 1.0;//同上
 
-			if (cream_count > 600 || maxCen >= cenF_border || maxDeg >= e4Deg_border ||
-				(cream_count > 300 && maxCen<cenF_no_move&&maxDeg<e4Deg_no_move)){//1/7　変更箇所 ゲームオーバー除外仮配置
+			if (cream_count > 600 || maxCen >= 2.0 || maxDeg >= 10){//1/7　変更箇所 ゲームオーバー除外仮配置
 				GetDlgItem(IDC_GLVIEW)->ShowWindow(SW_HIDE);
 				GetDlgItem(IDC_ANIMATE2)->ShowWindow(SW_SHOW);
 				//1/7　変更箇所
@@ -1532,9 +1504,13 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 				//1/11　変更箇所
 				//結果判定
 
-				//実行時における最大の値を表示　本番は↓二つを消去
-				maxCen = 1.0;//仮
-				maxDeg = 1.0;//同上
+				//実行時における最大の値を表示　とりあえず仮配置
+				//どう最大値だしてるのか知らないので適当に
+				//double cenF_MAX = 0.1;//仮ヘッダー送り
+				//double e4Deg_MAX = 30;//同上
+
+				maxCen = 2.0;//仮
+				maxDeg = 10;//同上
 
 				CString cf_MAX, ed_MAX;
 
@@ -1544,72 +1520,23 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 				msg_ED_D.SetWindowTextW(ed_MAX);
 
 				//結果判定仮配置
+				//文章どうするかは結果画像と考える？
 
-				if (maxCen >= cenF_border || maxDeg >= e4Deg_border){
+				if (maxCen >= 2.0 || maxDeg >= 10){
 					result_text = _T("残念ながら崩れました\r\n");
-					if (maxCen >= cenF_border){//遠心力が高い
-						result_text += _T("強く回しすぎのようです\r\n");
-						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ遠心力.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶遠心力.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ遠心力.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						
-					}
-					else{//傾きすぎ
+					m_xcAnimate_Result.Open(L"失敗2.avi");
+					m_xcAnimate_Result.Play(0, -1, 1);
+					if (maxCen < 2.0){
 						result_text += _T("傾けすぎたみたいです\r\n");
-						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ傾き.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶傾き.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ傾き.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-					}
-				}
-				else if (maxCen < cenF_border && maxDeg < e4Deg_border){
-					if (maxCen<cenF_no_move&&maxDeg<e4Deg_no_move){
-						result_text = _T("ちゃんと回しましょう！\r\n");
-						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ溢れ.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶溢れ.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ溢れ.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
 					}
 					else{
-						result_text = _T("よくできました\r\n");
-						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ成功.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶成功.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
-						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ成功.avi");
-							m_xcAnimate_Result.Play(0, -1, 1);
-						}
+						result_text += _T("強く回しすぎのようです\r\n");
 					}
+				}
+				else if (maxCen < 2.0 || maxDeg < 10){
+					result_text = _T("よくできました\r\n");
+					m_xcAnimate_Result.Open(L"250-400 (2).avi");
+					m_xcAnimate_Result.Play(0, -1, 1);
 				}
 
 				msg_ED_T.SetWindowTextW(result_text);
@@ -1655,8 +1582,6 @@ void Csoft_cream_appDlg::OnBnClickedButton4()
 	fall_cream_ch = 0;
 	cream_count_ch = 0;
 	KillTimer(1);
-	m_xcAnimate_Remaining.Open(L"180-320.avi");
-	m_xcAnimate_Remaining.Play(0, -1, 1);
 	OnPaint();
 
 }
