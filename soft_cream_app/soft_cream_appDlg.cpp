@@ -1492,8 +1492,8 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 			//double cenF_MAX = 0.1;//‰¼ƒwƒbƒ_[‘—‚è
 			//double e4Deg_MAX = 30;//“¯ã
 
-			cenF_MAX = maxCen;//‰¼
-			e4Deg_MAX = maxDeg;//“¯ã
+			cenF_MAX = maxCen;//‘ã“ü
+			e4Deg_MAX = maxDeg;//‘ã“ü
 
 			CString cf_MAX, ed_MAX;
 
