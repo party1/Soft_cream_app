@@ -7,9 +7,9 @@
 #include "soft_cream_appDlg.h"
 #include "afxdialogex.h"
 
-//解放
-#include "stdlib.h"
-#include "stdio.h"
+//#include "stdlib.h"
+//#include "stdio.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -463,8 +463,6 @@ BEGIN_MESSAGE_MAP(Csoft_cream_appDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &Csoft_cream_appDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_RADIO2, &Csoft_cream_appDlg::OnBnClickedRadio2)
 	ON_BN_CLICKED(IDC_RADIO3, &Csoft_cream_appDlg::OnBnClickedRadio3)
-	ON_BN_CLICKED(IDOK, &Csoft_cream_appDlg::OnBnClickedOk)
-	ON_BN_CLICKED(IDCANCEL, &Csoft_cream_appDlg::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 
@@ -595,18 +593,13 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 	}
 	// OpenGLの初期化はここまで
 
-	//m_nTimer = SetTimer(1, 30, 0);//Timerセット　0.03秒
+	m_nTimer = SetTimer(1, 30, 0);//Timerセット　0.03秒
 	//1/5　変更箇所
 	//アニメーション初期化
 	m_xcAnimate_Remaining.Open(L"180-320.avi");
 	m_xcAnimate_Remaining.Play(0, -1, 1);
-	//SetTimer(2, 1000, 0);//Timerセット　1秒
-	SetTimer(3, 30, 0);//Timerセット　0.03秒(本当はいらないけど都合により設置)
+	SetTimer(2, 1000, 0);//Timerセット　1秒
 	//1/5　ここまで
-
-
-	srand((unsigned int)time(NULL));
-
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
 
@@ -1347,7 +1340,6 @@ void Csoft_cream_appDlg::OnBnClickedButton3()
 	//プロトタイプモード作動ボタン
 	//隠す壁を表示して描画を開始する
 	hide_cone = 1;
-	SetTimer(1, 30, 0);//Timerセット　0.03秒
 	//ボタン押した場合の初期
 	m_xcAnimate_Remaining.Open(L"180-320.avi");
 	m_xcAnimate_Remaining.Play(0, -1, 1);
@@ -1355,20 +1347,31 @@ void Csoft_cream_appDlg::OnBnClickedButton3()
 	OnPaint();
 }
 
+static int once(){
+	return 0;
+}
+
 //12/22 追加分 遠心力を計算して返す関数
 double centrifugal_force_cal(double lx, double ly, double e4z)
-{
+{	
 	double cForce = 0;
+	double judge = 1.0;
+	//最初の一回は0を代入しないと最大値が1.0で保障されてしまうのでその修正
+	if (lx == 0.0 && ly == 0.0){
+		judge = 0.0;
+	}
 	// リニア加速度x,yの平方二乗和
-	cForce = abs(sqrt((lx*lx) + (ly*ly))) + abs(sqrt(1 - (e4z*e4z)));
+	cForce = abs(sqrt((lx*lx) + (ly*ly))) + abs(sqrt( judge - (e4z*e4z)));
 
 	return cForce;
 }
+
 
 //e4にてデバイスの傾きをdegreeで返す関数
 double e4z_conversion_degree(double e4z)
 {
 	double deg = 0;
+
 	//e4zの傾きをdegreeに直す
 	deg = asin(e4z) * 180 / PI;
 
@@ -1389,12 +1392,26 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 	double cenF = centrifugal_force_cal(lx, ly, e4z);
 	double e4Deg = e4z_conversion_degree(e4z);
 
-	//下に移動
+	//センサーが0点からずれているため最初の値を保存しておく
+	if (firstCount == 0 && e4Deg != 0.0){
+		saveDeg = e4Deg;
+		firstCount++;
+	}
+
+	deterDeg = saveDeg - e4Deg;     //角度を最初の場所からどれだけ傾いたのかを直観的に分かる数値に直す
+
+	//遠心力と傾きの最高点を保存しておく
+	if (maxCen < cenF){
+		maxCen = cenF;
+	}
+	if (maxDeg < deterDeg){
+		maxDeg = deterDeg;
+	}
 
 	CString cf, ed;
 
-	cf.Format(_T("%f"), cenF);
-	ed.Format(_T("%f"), e4Deg);
+	cf.Format(_T("%f,  %f"), cenF, maxCen);
+	ed.Format(_T("%f,  %f"), deterDeg, maxDeg);
 	msgED1.SetWindowTextW(cf);
 	msgED2.SetWindowTextW(ed);
 
@@ -1406,144 +1423,92 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 		if (nIDEvent == 1){
 			//条件を満たしている場合
 			//アイスクリーム落下、実行カウント加算、描画
-			//イチゴの場合のみ速度変化
-			if (cream_color == 2){//イチゴ
-				if (cream_count <= 400){//400まで
-					if (((int)cream_count % 50) == 0){//50ごと
-						if ((rand() % 3 + 1) == 1){//ランダム
-							fall_cream_ch = 0.2;
-							cream_count_ch = 0.8;
-						}
-						else if ((rand() % 3 + 1) == 2){
-							fall_cream_ch = 0.7;
-							cream_count_ch = 2.8;
-						}
-						else{
-							fall_cream_ch = 0.5;
-							cream_count_ch = 2;
-						}
-						//変更されたものを描画
-						fall_cream -= fall_cream_ch;
-						cream_count += cream_count_ch;
-					}
-					else{
-						//50毎でない場合は設定された値で落下
-						fall_cream -= fall_cream_ch;
-						cream_count += cream_count_ch;
-					}
-				}
-				else{
-					if (cream_count <= 500){
-						//400以降は変更なし
-						fall_cream -= fall_cream_ch;
-						cream_count += cream_count_ch;
-					}
-					else{
-						//500以降は等速に
-						fall_cream -= 0.5;
-						cream_count += 2;
-					}
-					
-				}
+			//複数個分割を考えると配列で行うか？
+			fall_cream -= 0.5;
+			cream_count+=2;
+			OnPaint();
+		}
+		//1/7　変更箇所
+		
+		if (cream_count <= 500 && (cream_count % 50)==0){//500以下で50の倍数
+			//クリームカウントでアニメーション変化テスト
+			//count_anim = cream_count % 50;
+			if (count_anim == 0){
+				m_xcAnimate_Remaining.Open(L"0m.avi");
+
+				m_xcAnimate_Remaining.Play(0, -1, 1);
+			}
+			else if (count_anim == 1){
+				m_xcAnimate_Remaining.Open(L"1m.avi");
+
+				m_xcAnimate_Remaining.Play(0, -1, 1);
 			}
 			else{
-				fall_cream -= 0.5;
-				cream_count += 2;
-			}
-			OnPaint();
-
-			//遠心力と傾きの最高点を保存しておく
-			//こっちに移動
-			if (cream_count <= 600&&maxCen < cenF){
-				maxCen = cenF;
 
 			}
-			if (cream_count <= 600 && maxDeg < e4Deg){
-				maxDeg = e4Deg;
 
-			}
-			//1/11　変更箇所
+			count_anim++;
+		}
+		
+		//1/7　ここまで
 
-			if (cream_count <= 500){//500以下で50の倍数
-				//クリームカウントでアニメーション変化テスト
-				//double型にしたせいで元の方法が使えなくなったので仕方ないね
-				if (count_anim == 0&&cream_count <= 50){
-					m_xcAnimate_Remaining.Open(L"0m.avi");
-					m_xcAnimate_Remaining.Play(0, -1, 1);
-				}
-				else if (count_anim == 1 && cream_count <= 100){
-					m_xcAnimate_Remaining.Open(L"1m.avi");
-					m_xcAnimate_Remaining.Play(0, -1, 1);
+		if (cream_count == 600 || cenF_MAX>=2.0 || e4Deg_MAX>=10){//1/7　変更箇所 ゲームオーバー除外仮配置
+			GetDlgItem(IDC_GLVIEW)->ShowWindow(SW_HIDE);
+			GetDlgItem(IDC_ANIMATE2)->ShowWindow(SW_SHOW);
+			//1/7　変更箇所
+			//結果画面の表示
+			GetDlgItem(IDC_STATIC_1)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_STATIC_2)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_STATIC_3)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_STATIC_4)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_STATIC_5)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_EDIT4)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_EDIT5)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_EDIT6)->ShowWindow(SW_SHOW);
+			//1/7　ここまで
+			//m_xcAnimate_Result.Open(L"250-400 (2).avi");
+			//m_xcAnimate_Result.Play(0, -1, 1);
+
+			//1/7　変更箇所
+			//結果判定
+			
+			//実行時における最大の値を表示　とりあえず仮配置
+			//どう最大値だしてるのか知らないので適当に
+			//double cenF_MAX = 0.1;//仮ヘッダー送り
+			//double e4Deg_MAX = 30;//同上
+
+			cenF_MAX = maxCen;//仮
+			e4Deg_MAX = maxDeg;//同上
+
+			CString cf_MAX, ed_MAX;
+
+			cf_MAX.Format(_T("%f"), cenF_MAX);
+			ed_MAX.Format(_T("%f"), e4Deg_MAX);
+			msg_ED_G.SetWindowTextW(cf_MAX);
+			msg_ED_D.SetWindowTextW(ed_MAX);
+			
+			//結果判定仮配置
+			//文章どうするかは結果画像と考える？
+			
+			if (cenF_MAX >= 2.0 || e4Deg_MAX >= 10){
+				result_text = _T("残念ながら崩れました\r\n");
+				m_xcAnimate_Result.Open(L"失敗2.avi");
+				m_xcAnimate_Result.Play(0, -1, 1);
+				if (cenF_MAX < 2.0){
+					result_text += _T("傾けすぎたみたいです\r\n");
 				}
 				else{
-
+					result_text += _T("強く回しすぎのようです\r\n");
 				}
-
-				count_anim++;
+			}
+			else if (cenF_MAX<2.0 || e4Deg_MAX<10){
+				result_text = _T("よくできました\r\n");
+				m_xcAnimate_Result.Open(L"250-400 (2).avi");
+				m_xcAnimate_Result.Play(0, -1, 1);
 			}
 
-			//1/11　ここまで
-
-			if (cream_count > 600 || maxCen >= 2.0 || maxDeg >= 10){//1/7　変更箇所 ゲームオーバー除外仮配置
-				GetDlgItem(IDC_GLVIEW)->ShowWindow(SW_HIDE);
-				GetDlgItem(IDC_ANIMATE2)->ShowWindow(SW_SHOW);
-				//1/7　変更箇所
-				//結果画面の表示
-				GetDlgItem(IDC_STATIC_1)->ShowWindow(SW_SHOW);
-				GetDlgItem(IDC_STATIC_2)->ShowWindow(SW_SHOW);
-				GetDlgItem(IDC_STATIC_3)->ShowWindow(SW_SHOW);
-				GetDlgItem(IDC_STATIC_4)->ShowWindow(SW_SHOW);
-				GetDlgItem(IDC_STATIC_5)->ShowWindow(SW_SHOW);
-				GetDlgItem(IDC_EDIT4)->ShowWindow(SW_SHOW);
-				GetDlgItem(IDC_EDIT5)->ShowWindow(SW_SHOW);
-				GetDlgItem(IDC_EDIT6)->ShowWindow(SW_SHOW);
-				//1/7　ここまで
-				//m_xcAnimate_Result.Open(L"250-400 (2).avi");
-				//m_xcAnimate_Result.Play(0, -1, 1);
-
-				//1/11　変更箇所
-				//結果判定
-
-				//実行時における最大の値を表示　とりあえず仮配置
-				//どう最大値だしてるのか知らないので適当に
-				//double cenF_MAX = 0.1;//仮ヘッダー送り
-				//double e4Deg_MAX = 30;//同上
-
-				maxCen = 2.0;//仮
-				maxDeg = 10;//同上
-
-				CString cf_MAX, ed_MAX;
-
-				cf_MAX.Format(_T("%f"), maxCen);
-				ed_MAX.Format(_T("%f"), maxDeg);
-				msg_ED_G.SetWindowTextW(cf_MAX);
-				msg_ED_D.SetWindowTextW(ed_MAX);
-
-				//結果判定仮配置
-				//文章どうするかは結果画像と考える？
-
-				if (maxCen >= 2.0 || maxDeg >= 10){
-					result_text = _T("残念ながら崩れました\r\n");
-					m_xcAnimate_Result.Open(L"失敗2.avi");
-					m_xcAnimate_Result.Play(0, -1, 1);
-					if (maxCen < 2.0){
-						result_text += _T("傾けすぎたみたいです\r\n");
-					}
-					else{
-						result_text += _T("強く回しすぎのようです\r\n");
-					}
-				}
-				else if (maxCen < 2.0 || maxDeg < 10){
-					result_text = _T("よくできました\r\n");
-					m_xcAnimate_Result.Open(L"250-400 (2).avi");
-					m_xcAnimate_Result.Play(0, -1, 1);
-				}
-
-				msg_ED_T.SetWindowTextW(result_text);
-				
-				KillTimer(1);
-				//1/11　ここまで
-			}
+			msg_ED_T.SetWindowTextW(result_text);
+			//1/7　ここまで
 		}
 	}
 	CDialogEx::OnTimer(nIDEvent);
@@ -1573,15 +1538,9 @@ void Csoft_cream_appDlg::OnBnClickedButton4()
 	GetDlgItem(IDC_EDIT5)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_EDIT6)->ShowWindow(SW_HIDE);
 	count_anim = 0;
+	cenF_MAX = 0;//仮
+	e4Deg_MAX = 0;//同上
 	//1/7　ここまで
-
-	//1/11　変更箇所
-	//追加した変数をリセット
-	maxCen = 0;
-	maxDeg = 0;
-	fall_cream_ch = 0;
-	cream_count_ch = 0;
-	KillTimer(1);
 	OnPaint();
 
 }
@@ -1624,23 +1583,3 @@ void Csoft_cream_appDlg::OnBnClickedRadio3()
 }
 
 
-
-//1/11　変更箇所
-//終了時にTimer停止を追加
-void Csoft_cream_appDlg::OnBnClickedOk()
-{
-	// TODO: ここにコントロール通知ハンドラー コードを追加します。
-	KillTimer(1);
-	KillTimer(3);
-	CDialogEx::OnOK();
-}
-
-
-void Csoft_cream_appDlg::OnBnClickedCancel()
-{
-	// TODO: ここにコントロール通知ハンドラー コードを追加します。
-	KillTimer(1);
-	KillTimer(3);
-	CDialogEx::OnCancel();
-}
-//1/11　ここまで
