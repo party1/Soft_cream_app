@@ -6,7 +6,7 @@
 #include "soft_cream_app.h"
 #include "soft_cream_appDlg.h"
 #include "afxdialogex.h"
-#include <cmath>
+
 //解放
 #include "stdlib.h"
 #include "stdio.h"
@@ -465,6 +465,7 @@ BEGIN_MESSAGE_MAP(Csoft_cream_appDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_RADIO3, &Csoft_cream_appDlg::OnBnClickedRadio3)
 	ON_BN_CLICKED(IDOK, &Csoft_cream_appDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &Csoft_cream_appDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDC_RADIO4, &Csoft_cream_appDlg::OnBnClickedRadio4)
 END_MESSAGE_MAP()
 
 
@@ -598,7 +599,8 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 	//m_nTimer = SetTimer(1, 30, 0);//Timerセット　0.03秒
 	//1/5　変更箇所
 	//アニメーション初期化
-	m_xcAnimate_Remaining.Open(L"ゲージ6.avi");
+	m_xcAnimate_Remaining.Open(L"ゲージ6R.avi");
+	//ゲージ6
 	m_xcAnimate_Remaining.Play(0, -1, 1);
 	//SetTimer(2, 1000, 0);//Timerセット　1秒
 	SetTimer(3, 30, 0);//Timerセット　0.03秒(本当はいらないけど都合により設置)
@@ -789,6 +791,9 @@ void DrawFallCream(int cream_color){
 		}
 		else if (cream_color == 2){
 			glColor3f(1.0, 0.0, 0.8);
+		}
+		else if (cream_color == 3){
+			glColor3f(1.0, 1.0, 1.0);
 		}
 		glBegin(GL_QUAD_STRIP);
 		for (double i = 0; i <= sides; i = i + 1){
@@ -1383,7 +1388,7 @@ void Csoft_cream_appDlg::OnBnClickedButton3()
 		hide_cone = 1;
 		SetTimer(1, 30, 0);//Timerセット　0.03秒
 		//ボタン押した場合の初期
-		m_xcAnimate_Remaining.Open(L"ゲージ6.avi");
+		m_xcAnimate_Remaining.Open(L"ゲージ6R.avi");
 		m_xcAnimate_Remaining.Play(0, -1, 1);
 		GetDlgItem(IDC_GLVIEW)->ShowWindow(SW_SHOW);
 		OnPaint();
@@ -1435,7 +1440,7 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 		firstCount++;
 	}
 
-	deterDeg = std::abs(saveDeg - e4Deg);     //角度を最初の場所からどれだけ傾いたのかを直観的に分かる数値に直す
+	deterDeg = saveDeg - e4Deg;     //角度を最初の場所からどれだけ傾いたのかを直観的に分かる数値に直す
 
 
 
@@ -1524,32 +1529,32 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 				//double型にしたせいで元の方法が使えなくなったので仕方ないね
 				//システム修復
 				if (count_anim == 0&&cream_count >= 60){
-					m_xcAnimate_Remaining.Open(L"ゲージ5.avi");
+					m_xcAnimate_Remaining.Open(L"ゲージ5R.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
 					count_anim++;
 				}
 				else if (count_anim == 1 && cream_count >= 120){
-					m_xcAnimate_Remaining.Open(L"ゲージ4.avi");
+					m_xcAnimate_Remaining.Open(L"ゲージ4R.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
 					count_anim++;
 				}
 				else if (count_anim == 2 && cream_count >= 180){
-					m_xcAnimate_Remaining.Open(L"ゲージ3.avi");
+					m_xcAnimate_Remaining.Open(L"ゲージ3R.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
 					count_anim++;
 				}
 				else if (count_anim == 3 && cream_count >= 240){
-					m_xcAnimate_Remaining.Open(L"ゲージ2.avi");
+					m_xcAnimate_Remaining.Open(L"ゲージ2R.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
 					count_anim++;
 				}
 				else if (count_anim == 4 && cream_count >= 300){
-					m_xcAnimate_Remaining.Open(L"ゲージ1.avi");
+					m_xcAnimate_Remaining.Open(L"ゲージ1R.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
 					count_anim++;
 				}
 				else if (count_anim == 5 && cream_count >= 360){
-					m_xcAnimate_Remaining.Open(L"ゲージ0.avi");
+					m_xcAnimate_Remaining.Open(L"ゲージ0R.avi");
 					m_xcAnimate_Remaining.Play(0, -1, 1);
 					count_anim++;
 				}
@@ -1597,38 +1602,54 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 				msg_ED_G.SetWindowTextW(cf_MAX);
 				msg_ED_D.SetWindowTextW(ed_MAX);
 
-				//結果判定仮配置
+				if (cream_color == 3){
+					cenF_border = cenF_border_hard;
+					e4Deg_border = e4Deg_border_hard;
+				}
+				else{
+					cenF_border = cenF_border_easy;
+					e4Deg_border = e4Deg_border_easy;
+				}
+
 
 				if (maxCen >= cenF_border || maxDeg >= e4Deg_border){
-					result_text = _T("残念ながら崩れました。\r\n");
+					result_text = _T("残念ながら崩れました\r\n");
 					if (maxCen >= cenF_border){//遠心力が高い
-						result_text += _T("落ち着いて巻かないと\r\n食べれませんよ！\r\n");
+						result_text += _T("強く回しすぎのようです\r\n");
 						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ遠心力.avi");
+							m_xcAnimate_Result.Open(L"チョコ遠心力R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶遠心力.avi");
+							m_xcAnimate_Result.Open(L"抹茶遠心力R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ遠心力.avi");
+							m_xcAnimate_Result.Open(L"イチゴ遠心力R.avi");
+							m_xcAnimate_Result.Play(0, -1, 1);
+						}
+						else if (cream_color == 3){
+							m_xcAnimate_Result.Open(L"ノーマル遠心力R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						
 					}
 					else{//傾きすぎ
-						result_text += _T("安定感が欠如しています！\r\nこれでは食べれません。\r\n");
+						result_text += _T("傾けすぎたみたいです\r\n");
 						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ傾き.avi");
+							m_xcAnimate_Result.Open(L"チョコ傾きR.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶傾き.avi");
+							m_xcAnimate_Result.Open(L"抹茶傾きR.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ傾き.avi");
+							m_xcAnimate_Result.Open(L"イチゴ傾きR.avi");
+							m_xcAnimate_Result.Play(0, -1, 1);
+						}
+						else if (cream_color == 3){
+							m_xcAnimate_Result.Open(L"ノーマル傾きR.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 					}
@@ -1636,32 +1657,41 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 				else if (maxCen < cenF_border && maxDeg < e4Deg_border){
 					if (maxCen<cenF_no_move){
 						//maxDeg<e4Deg_no_move
-						result_text = _T("巻きが足りません！\r\n手を動かしましょう。\r\n");
+						result_text = _T("ちゃんと回しましょう！\r\n");
 						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ溢れ.avi");
+							//m_xcAnimate_Result.Open(L"480760.avi");
+							m_xcAnimate_Result.Open(L"チョコ溢れR.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶溢れ.avi");
+							m_xcAnimate_Result.Open(L"抹茶溢れR.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ溢れ.avi");
+							m_xcAnimate_Result.Open(L"イチゴ溢れR.avi");
+							m_xcAnimate_Result.Play(0, -1, 1);
+						}
+						else if (cream_color == 3){
+							m_xcAnimate_Result.Open(L"ノーマル溢れR.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 					}
 					else{
-						result_text = _T("素晴らしい出来映えです！\r\n");
+						result_text = _T("よくできました\r\n");
 						if (cream_color == 0){
-							m_xcAnimate_Result.Open(L"チョコ成功.avi");
+							m_xcAnimate_Result.Open(L"チョコ成功R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 1){
-							m_xcAnimate_Result.Open(L"抹茶成功.avi");
+							m_xcAnimate_Result.Open(L"抹茶成功R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 						else if (cream_color == 2){
-							m_xcAnimate_Result.Open(L"イチゴ成功.avi");
+							m_xcAnimate_Result.Open(L"イチゴ成功R.avi");
+							m_xcAnimate_Result.Play(0, -1, 1);
+						}
+						else if (cream_color == 3){
+							m_xcAnimate_Result.Open(L"ノーマル成功R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
 						}
 					}
@@ -1710,13 +1740,14 @@ void Csoft_cream_appDlg::OnBnClickedButton4()
 	fall_cream_ch = 0;
 	cream_count_ch = 0;
 	KillTimer(1);
-	m_xcAnimate_Remaining.Open(L"ゲージ6.avi");
+	m_xcAnimate_Remaining.Open(L"ゲージ6R.avi");
 	m_xcAnimate_Remaining.Play(0, -1, 1);
 	deterDeg = 0.0;
-	saveDeg = 0.0;
-	firstCount=0;
 	OnPaint();
 
+	//2/22　変更箇所
+	cenF_border = 0.0;
+	e4Deg_border = 0.0;
 }
 
 void Csoft_cream_appDlg::OnBnClickedRadio1()
@@ -1756,7 +1787,18 @@ void Csoft_cream_appDlg::OnBnClickedRadio3()
 	}
 }
 
-
+//2/22　変更箇所
+//バニラを追加
+void Csoft_cream_appDlg::OnBnClickedRadio4()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	if (hide_cone == 0){
+		cream_color = 3;
+	}
+	else{
+	}
+}
+//2/22　ここまで
 
 //1/11　変更箇所
 //終了時にTimer停止を追加

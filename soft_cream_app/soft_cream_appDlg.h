@@ -104,11 +104,22 @@ public:
 	double fall_cream_ch = 0;//落下速度変更実験
 	double cream_count_ch = 0;//同上
 
-	double cenF_border=0.5;//遠心力基準値
-	double e4Deg_border=3.0;//角度基準値
+	//2/22　変更箇所
+	//難易度ごとに数値を変更可能に
+
+	double cenF_border = 0.0;//遠心力基準値
+	double e4Deg_border = 0.0;//角度基準値
+
+	double cenF_border_easy=1.0;//簡単
+	double e4Deg_border_easy=6.0;//
+
+	double cenF_border_hard = 0.5;//難しい
+	double e4Deg_border_hard = 3.0;//
+
 
 	//一時的に-化　本番では戻す
-	double cenF_no_move = 0.2;//動きほぼなし　
+	double cenF_no_move = 0.1;//動きほぼなし　1.2
 	double e4Deg_no_move = 0;//同上　2
 	//1/11　ここまで
+	afx_msg void OnBnClickedRadio4();
 };
