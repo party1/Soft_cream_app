@@ -74,7 +74,7 @@ public:
 	int    firstCount = 0;          //一回だけ使うフラグ
 	CFont *m_newFont;
 	
-	
+	CFont *m_newFont_test;
 private:
 	CAnimateCtrl m_xcAnimate_Remaining;//アニメーション用　クリーム残量に紐付け
 	CAnimateCtrl m_xcAnimate_Result;//結果画像アニメ
@@ -113,12 +113,15 @@ public:
 	double cenF_border_easy=1.0;//簡単
 	double e4Deg_border_easy=6.0;//
 
+	double cenF_border_very_easy = 1.5;//超簡単(仮設置)
+	double e4Deg_border_very_easy = 9.0;//
+
 	double cenF_border_hard = 0.5;//難しい
 	double e4Deg_border_hard = 3.0;//
 
 
 	//一時的に-化　本番では戻す
-	double cenF_no_move = 0.1;//動きほぼなし　1.2
+	double cenF_no_move = 0.15;//動きほぼなし　1.2
 	double e4Deg_no_move = 0;//同上　2
 	//1/11　ここまで
 	afx_msg void OnBnClickedRadio4();

@@ -424,7 +424,6 @@ END_MESSAGE_MAP()
 // Csoft_cream_appDlg ダイアログ
 
 
-
 Csoft_cream_appDlg::Csoft_cream_appDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Csoft_cream_appDlg::IDD, pParent)
 	, m_xvRadio(0)
@@ -448,6 +447,7 @@ void Csoft_cream_appDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT4, msg_ED_G);
 	DDX_Control(pDX, IDC_EDIT5, msg_ED_D);
 	DDX_Control(pDX, IDC_EDIT6, msg_ED_T);
+
 }
 
 BEGIN_MESSAGE_MAP(Csoft_cream_appDlg, CDialogEx)
@@ -605,12 +605,14 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 	//SetTimer(2, 1000, 0);//Timerセット　1秒
 	SetTimer(3, 30, 0);//Timerセット　0.03秒(本当はいらないけど都合により設置)
 	//1/5　ここまで
+
 	//以下フォントの大きさを変える
 	CFont  *curFont;
 	curFont = msgED.GetFont();
 	LOGFONTW mylf;
 	curFont->GetLogFont(&mylf);
-	mylf.lfHeight = 20;
+	//mylf.lfHeight = 20;
+	mylf.lfHeight = 25;
 	mylf.lfWidth = 10;
 	//mylf.lfWeight = FW_HEAVY;
 	m_newFont = new CFont;
@@ -619,6 +621,38 @@ BOOL Csoft_cream_appDlg::OnInitDialog()
 	msgED1.SetFont(m_newFont);
 	msgED2.SetFont(m_newFont);
 	msg_ED_T.SetFont(m_newFont);
+	msg_ED_G.SetFont(m_newFont);
+	msg_ED_D.SetFont(m_newFont);
+
+	CFont  *curFont_test;
+	curFont_test = msgED.GetFont();
+	LOGFONTW mylf_test;
+	curFont_test->GetLogFont(&mylf_test);
+	mylf_test.lfHeight = 25;
+	mylf_test.lfWidth = 10;
+	//mylf.lfWeight = FW_HEAVY;
+	m_newFont_test = new CFont;
+	m_newFont_test->CreateFontIndirectW(&mylf_test);
+	GetDlgItem(IDC_STATIC_1)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_2)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_3)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_4)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_5)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_6)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_8)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_9)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_33)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_STATIC_55)->SetFont(m_newFont_test);
+
+	GetDlgItem(IDC_RADIO1)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_RADIO2)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_RADIO3)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_RADIO4)->SetFont(m_newFont_test);
+
+	GetDlgItem(IDC_BUTTON1)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_BUTTON2)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_BUTTON3)->SetFont(m_newFont_test);
+	GetDlgItem(IDC_BUTTON4)->SetFont(m_newFont_test);
 
 	srand((unsigned int)time(NULL));
 
@@ -646,7 +680,9 @@ void DrawCone(){
 	//コーンの描画関数
 	//8角形で上の面引いて構築
 	//サイズ変更可能な関数化する？
-	glColor3f(1.0, 1.0, 0.0);
+	//glColor3f(1.0, 1.0, 0.0);
+	//glColor3f(0.7, 0.6, 0.3);
+	glColor3f(0.95, 0.59, 0.0);
 	glBegin(GL_POLYGON);
 	glVertex3d(0.0, 0.0, -8.0);
 	glVertex3d(2.0, 0.0, 0.0);
@@ -668,7 +704,7 @@ void DrawCone(){
 	glVertex3d(2.0, 0.0, 0.0);
 	glEnd();
 
-	glColor3f(1.0, 0.0, 1.0);
+	glColor3f(0.85, 0.49, 0.0);
 	glBegin(GL_POLYGON);
 	glVertex3d(2.0, 0.0, 0.0);
 	glVertex3d(1.75, 1.25, 0.0);
@@ -740,8 +776,8 @@ void DrawAxis(){
 void DrawServer(){
 	//サーバー用の壁の関数
 	//4回置けば箱
-	//なんか変になったけど現時点では放置
 	glColor3f(1.0, 1.0, 1.0);
+	glColor3f(0.8, 0.8, 0.8);
 	glBegin(GL_POLYGON);
 	glVertex3d(0.0, 0.0, 0.0);
 	glVertex3d(15.0, 0.0, 0.0);
@@ -784,13 +820,16 @@ void DrawFallCream(int cream_color){
 
 		//側面
 		if (cream_color == 0){
-			glColor3f(0.4, 0.2, 0.2);
+			//glColor3f(0.4, 0.2, 0.2);
+			glColor3f(0.53, 0.29, 0.23);
 		}
 		else if (cream_color == 1){
-			glColor3f(0.0, 0.5, 0.0);
+			//glColor3f(0.0, 0.5, 0.0);
+			glColor3f(0.72, 0.82, 0.49);
 		}
 		else if (cream_color == 2){
-			glColor3f(1.0, 0.0, 0.8);
+			//glColor3f(1.0, 0.0, 0.8);
+			glColor3f(0.99, 0.70, 0.69);
 		}
 		else if (cream_color == 3){
 			glColor3f(1.0, 1.0, 1.0);
@@ -847,7 +886,7 @@ void Csoft_cream_appDlg::OnPaint()
 	glLineWidth(3.0);
 
 
-	DrawAxis();//3本線を引く
+	//DrawAxis();//3本線を引く
 
 	::glPushMatrix();
 	//クリームの落下を描画
@@ -869,6 +908,7 @@ void Csoft_cream_appDlg::OnPaint()
 		::glPopMatrix();
 		//1/5　変更箇所
 		//サーバーの描画
+		/*
 		DrawServer();
 		glTranslated(-3.0, 3.0, 0.0);
 		DrawServer();
@@ -876,7 +916,22 @@ void Csoft_cream_appDlg::OnPaint()
 		DrawServer();
 		glTranslated(0.0, 6.0, 0.0);
 		DrawServer();
+		*/
 		//1/5　ここまで
+		::glPushMatrix();
+		glTranslated(3.0, 3.0, 0.0);
+			::glPushMatrix();
+				//3方面のコーン隠し
+				glTranslated(-3.0, 3.0, 0.0);
+				DrawServer();
+				glRotated(-90, 0.0, 0.0, 1.0);
+				DrawServer();
+				glTranslated(0.0, 15.0, 0.0);
+				DrawServer();
+			::glPopMatrix();
+			glTranslated(-3.0, -3.0, 0.0);
+			DrawServer();
+		::glPopMatrix();
 	}
 	::glPopMatrix();
 	
@@ -1447,11 +1502,29 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 	//下に移動
 
 	CString cf, ed;
+	
+	//cf.Format(_T("%0.3f,\r\nMAX = %0.3f"), cenF, maxCen);
+	//ed.Format(_T("%0.3f,\r\nMAX = %0.3f"), deterDeg, maxDeg);
+	//msgED1.SetWindowTextW(cf);
+	//msgED2.SetWindowTextW(ed);
+	
 
-	cf.Format(_T("%0.3f,\r\nMAX = %0.3f"), cenF, maxCen);
-	ed.Format(_T("%0.3f,\r\nMAX = %0.3f"), deterDeg, maxDeg);
-	msgED1.SetWindowTextW(cf);
-	msgED2.SetWindowTextW(ed);
+	//3/5実験
+	
+	if (cream_color==0||cream_color==2||cream_color==3){
+		cf.Format(_T("%0.3f,\r\nMAX = %0.3f"), cenF, maxCen);
+		ed.Format(_T("%0.3f,\r\nMAX = %0.3f"), deterDeg, maxDeg);
+		msgED1.SetWindowTextW(cf);
+		msgED2.SetWindowTextW(ed);
+	}
+	else{
+		cf=_T("?.???,\r\nMAX = ?.???");
+		ed=_T("?.???,\r\nMAX = ?.???");
+		msgED1.SetWindowTextW(cf);
+		msgED2.SetWindowTextW(ed);
+	}
+	
+
 	/*
 	cf.Format(_T("%f"), cenF);
 	ed.Format(_T("%f"), e4Deg);
@@ -1467,7 +1540,7 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 			//条件を満たしている場合
 			//アイスクリーム落下、実行カウント加算、描画
 			//イチゴの場合のみ速度変化
-			if (cream_color == 2){//イチゴ
+			if (cream_color == 4){//イチゴ
 				if (cream_count <= 400){//400まで
 					if (((int)cream_count % 50) == 0){//50ごと
 						if ((rand() % 3 + 1) == 1){//ランダム
@@ -1602,20 +1675,29 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 				msg_ED_G.SetWindowTextW(cf_MAX);
 				msg_ED_D.SetWindowTextW(ed_MAX);
 
-				if (cream_color == 3){
+				if (cream_color == 1 || cream_color == 2){
 					cenF_border = cenF_border_hard;
 					e4Deg_border = e4Deg_border_hard;
+				}
+				if (cream_color == 0){
+					cenF_border = cenF_border_very_easy;
+					e4Deg_border = e4Deg_border_very_easy;
 				}
 				else{
 					cenF_border = cenF_border_easy;
 					e4Deg_border = e4Deg_border_easy;
 				}
-
-
+				/*
+				if (cream_color == 1){
+					cenF_border = cenF_border_very_easy;
+					e4Deg_border = e4Deg_border_very_easy;
+				}
+				*/
 				if (maxCen >= cenF_border || maxDeg >= e4Deg_border){
 					result_text = _T("残念ながら崩れました\r\n");
 					if (maxCen >= cenF_border){//遠心力が高い
 						result_text += _T("強く回しすぎのようです\r\n");
+						result_text += _T("あなたは遠心力で巻けなかった人間です\r\n");
 						if (cream_color == 0){
 							m_xcAnimate_Result.Open(L"チョコ遠心力R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
@@ -1636,6 +1718,7 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 					}
 					else{//傾きすぎ
 						result_text += _T("傾けすぎたみたいです\r\n");
+						result_text += _T("あなたは巻けなかった人間です\r\n");
 						if (cream_color == 0){
 							m_xcAnimate_Result.Open(L"チョコ傾きR.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
@@ -1678,6 +1761,7 @@ void Csoft_cream_appDlg::OnTimer(UINT_PTR nIDEvent)
 					}
 					else{
 						result_text = _T("よくできました\r\n");
+						result_text += _T("あなたは巻ける人間ですね\r\n");
 						if (cream_color == 0){
 							m_xcAnimate_Result.Open(L"チョコ成功R.avi");
 							m_xcAnimate_Result.Play(0, -1, 1);
@@ -1819,3 +1903,4 @@ void Csoft_cream_appDlg::OnBnClickedCancel()
 	CDialogEx::OnCancel();
 }
 //1/11　ここまで
+
